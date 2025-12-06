@@ -1,5 +1,8 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 import 'asthmatique.dart'; // Import de la page asthmatique
+import 'protection.dart'; // Import de la page protection
+import 'remission.dart'; // Import de la page rémission
 
 // StatefulWidget = un widget qui peut changer d'état
 class AccueilPage extends StatefulWidget {
@@ -175,9 +178,20 @@ class _AccueilPageState extends State<AccueilPage> {
                                 context, 
                                 MaterialPageRoute(builder: (c) => const AsthmatiquePage())
                               );
+                            } else if (selectedOption == 'protection') {
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (c) => const ProtectionPage())
+                              );
                             }
-                            // Pour l'instant, les autres options vont aussi vers asthmatique
-                            // Vous pourrez créer d'autres pages plus tard
+                            else if (selectedOption == 'remission') {
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (c) => const RemissionPage())
+                              );
+                            }
+
+                            // Pour la rémission, créer une autre page plus tard
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: selectedOption == null 

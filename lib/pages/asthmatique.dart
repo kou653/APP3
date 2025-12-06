@@ -5,7 +5,7 @@ import 'env.dart'; // Import de la page environnement
 // Page du tableau de bord pour les asthmatiques
 // Fichier : /lib/pages/asthmatique.dart
 class AsthmatiquePage extends StatelessWidget {
-  const AsthmatiquePage({Key? key}) : super(key: key);
+  const AsthmatiquePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class AsthmatiquePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -518,7 +518,7 @@ class AsthmatiquePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -601,7 +601,7 @@ class AsthmatiquePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -657,7 +657,7 @@ class AsthmatiquePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -763,10 +763,10 @@ class AsthmatiquePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDone ? color.withOpacity(0.1) : Colors.purple.shade50,
+        color: isDone ? color.withValues(alpha: 0.1) : Colors.purple.shade50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDone ? color.withOpacity(0.3) : Colors.purple.shade200,
+          color: isDone ? color.withValues(alpha: 0.3) : Colors.purple.shade200,
         ),
       ),
       child: Row(
