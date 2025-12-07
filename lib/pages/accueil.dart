@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'asthmatique.dart'; // Import de la page asthmatique
 import 'protection.dart'; // Import de la page protection
 import 'remission.dart'; // Import de la page rémission
+import 'aide_choix.dart';
 
 // StatefulWidget = un widget qui peut changer d'état
 class AccueilPage extends StatefulWidget {
@@ -158,7 +159,13 @@ class _AccueilPageState extends State<AccueilPage> {
                       const SizedBox(height: 20),
                       
                       TextButton.icon(
-                        onPressed: () => debugPrint('Aide demandée'),
+                        onPressed: () {
+                          // Navigation vers la page d'aide
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AideChoixPage()),
+                          );
+                        },
                         icon: const Icon(Icons.help_outline, size: 18),
                         label: const Text('Besoin d\'aide pour choisir ?'),
                         style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
@@ -197,7 +204,7 @@ class _AccueilPageState extends State<AccueilPage> {
                               );
                             }
 
-                            // Pour la rémission, créer une autre page plus tard
+                          
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: selectedOption == null 
