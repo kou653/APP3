@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'env.dart';
 import 'ecran_historique_crises.dart';
 import 'ecran_profil.dart';
+import '../state/app_state.dart';
 
 // Définit un nouveau widget pour l'écran des alertes et des prédictions.
 class EcranAlertesPredictions extends StatelessWidget {
@@ -102,67 +103,92 @@ class EcranAlertesPredictions extends StatelessWidget {
       ),
       
       // === BARRE DE NAVIGATION ===
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey[600],
-        currentIndex: 3, // Alertes sélectionné
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        onTap: (index) {
-          if (index == 0) {
-            // Retour à la page Accueil
-            Navigator.popUntil(context, (route) => route.isFirst);
-          } else if (index == 1) {
-            // Navigation vers Environnement
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EnvironnementPage()),
-            );
-          } else if (index == 2) {
-            // Navigation vers Crises
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
-            );
-          } else if (index == 4) {
-            // Navigation vers Profil
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranProfil()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.insert_drive_file_outlined),
-            activeIcon: Icon(Icons.insert_drive_file),
-            label: 'Environnement',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            activeIcon: Icon(Icons.show_chart),
-            label: 'Crises',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline),
-            activeIcon: Icon(Icons.info),
-            label: 'Alertes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
+      bottomNavigationBar: Builder(builder: (context) {
+        final hide = AppState.hideCrises;
+        final labels = hide
+            ? ['Accueil', 'Environnement', 'Alertes', 'Profil']
+            : ['Accueil', 'Environnement', 'Crises', 'Alertes', 'Profil'];
+        final currentIndex = labels.indexOf('Alertes');
+        return BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey[600],
+          currentIndex: currentIndex >= 0 ? currentIndex : 0,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          backgroundColor: Colors.white,
+          elevation: 8,
+          onTap: (index) {
+            final label = labels[index];
+            if (label == 'Accueil') {
+              Navigator.popUntil(context, (route) => route.isFirst);
+            } else if (label == 'Environnement') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EnvironnementPage()),
+              );
+            } else if (label == 'Crises') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
+              );
+            } else if (label == 'Alertes') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EcranAlertesPredictions()),
+              );
+            } else if (label == 'Profil') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EcranProfil()),
+              );
+            }
+          },
+          items: AppState.hideCrises
+              ? const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    label: 'Accueil',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.insert_drive_file),
+                    activeIcon: Icon(Icons.insert_drive_file),
+                    label: 'Environnement',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.info_outline),
+                    label: 'Alertes',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    label: 'Profil',
+                  ),
+                ]
+              : const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    label: 'Accueil',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.insert_drive_file),
+                    activeIcon: Icon(Icons.insert_drive_file),
+                    label: 'Environnement',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.show_chart),
+                    label: 'Crises',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.info_outline),
+                    label: 'Alertes',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    label: 'Profil',
+                  ),
+                ],
+        );
+      }),
     );
   }
 

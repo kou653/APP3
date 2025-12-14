@@ -4,6 +4,7 @@ import 'env.dart'; // Import de la page environnement
 import 'ecran_historique_crises.dart';
 import 'ecran_alertes_predictions.dart';
 import 'ecran_profil.dart';
+import '../state/app_state.dart';
 
 // Page Rémission - Pour les anciens asthmatiques stabilisés
 // Fichier : /lib/pages/remission.dart
@@ -474,67 +475,93 @@ class RemissionPage extends StatelessWidget {
       ),
       
       // === BARRE DE NAVIGATION ===
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey[600],
-        currentIndex: 0,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        onTap: (index) {
-          if (index == 1) {
-            // Navigation vers Environnement
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EnvironnementPage()),
-            );
-          } else if (index == 2) {
-            // Navigation vers Crises
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
-            );
-          } else if (index == 3) {
-            // Navigation vers Alertes
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranAlertesPredictions()),
-            );
-          } else if (index == 4) {
-            // Navigation vers Profil
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranProfil()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.insert_drive_file_outlined),
-            activeIcon: Icon(Icons.insert_drive_file),
-            label: 'Environnement',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: 'Crises',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline),
-            label: 'Alertes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profil',
-          ),
-        ],
-      ),
+      bottomNavigationBar: Builder(builder: (context) {
+        final hide = AppState.hideCrises;
+        final labels = hide
+            ? ['Accueil', 'Environnement', 'Alertes', 'Profil']
+            : ['Accueil', 'Environnement', 'Crises', 'Alertes', 'Profil'];
+        final currentIndex = labels.indexOf('Accueil');
+        return BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey[600],
+          currentIndex: currentIndex >= 0 ? currentIndex : 0,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          backgroundColor: Colors.white,
+          elevation: 8,
+          onTap: (index) {
+            final label = labels[index];
+            if (label == 'Accueil') {
+              Navigator.popUntil(context, (route) => route.isFirst);
+            } else if (label == 'Environnement') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EnvironnementPage()),
+              );
+            } else if (label == 'Crises') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
+              );
+            } else if (label == 'Alertes') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EcranAlertesPredictions()),
+              );
+            } else if (label == 'Profil') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EcranProfil()),
+              );
+            }
+          },
+          items: AppState.hideCrises
+              ? const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    label: 'Accueil',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.insert_drive_file),
+                    activeIcon: Icon(Icons.insert_drive_file),
+                    label: 'Environnement',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.info_outline),
+                    label: 'Alertes',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    label: 'Profil',
+                  ),
+                ]
+              : const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home),
+                    label: 'Accueil',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.insert_drive_file_outlined),
+                    activeIcon: Icon(Icons.insert_drive_file),
+                    label: 'Environnement',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.show_chart),
+                    label: 'Crises',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.info_outline),
+                    label: 'Alertes',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    label: 'Profil',
+                  ),
+                ],
+        );
+      }),
     );
   }
 

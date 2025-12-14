@@ -4,6 +4,7 @@ import 'asthmatique.dart'; // Import de la page asthmatique
 import 'protection.dart'; // Import de la page protection
 import 'remission.dart'; // Import de la page rémission
 import 'aide_choix.dart';
+import '../state/app_state.dart';
 
 // StatefulWidget = un widget qui peut changer d'état
 class AccueilPage extends StatefulWidget {
@@ -180,23 +181,26 @@ class _AccueilPageState extends State<AccueilPage> {
                         child: ElevatedButton(
                           onPressed: selectedOption == null ? null : () {
                             // Navigation selon l'option sélectionnée
-                            if (selectedOption == 'asthmatique') {
-                              Navigator.push(
-                                context, 
-                                MaterialPageRoute(builder: (c) => const AsthmatiquePage())
-                              );
-                            } else if (selectedOption == 'protection') {
-                              Navigator.push(
-                                context, 
-                                MaterialPageRoute(builder: (c) => const ProtectionPage())
-                              );
-                            }
-                            else if (selectedOption == 'remission') {
-                              Navigator.push(
-                                context, 
-                                MaterialPageRoute(builder: (c) => const RemissionPage())
-                              );
-                            }
+                              if (selectedOption == 'asthmatique') {
+                                AppState.hideCrises = false;
+                                Navigator.push(
+                                  context, 
+                                  MaterialPageRoute(builder: (c) => const AsthmatiquePage())
+                                );
+                              } else if (selectedOption == 'protection') {
+                                AppState.hideCrises = true;
+                                Navigator.push(
+                                  context, 
+                                  MaterialPageRoute(builder: (c) => const ProtectionPage())
+                                );
+                              }
+                              else if (selectedOption == 'remission') {
+                                AppState.hideCrises = true;
+                                Navigator.push(
+                                  context, 
+                                  MaterialPageRoute(builder: (c) => const RemissionPage())
+                                );
+                              }
                             else if (selectedOption == 'ecran_alertes_predictions') {
                               Navigator.push(
                                 context, 

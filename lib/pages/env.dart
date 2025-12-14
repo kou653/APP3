@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ecran_historique_crises.dart';
 import 'ecran_alertes_predictions.dart';
 import 'ecran_profil.dart';
+import '../state/app_state.dart';
 
 // Page Environnement - Qualité de l'air
 // Fichier : /lib/pages/env.dart
@@ -418,52 +419,78 @@ class EnvironnementPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 8,
         onTap: (index) {
-          if (index == 0) {
-            // Retour à la page Accueil (retour à la première page)
+          final hide = AppState.hideCrises;
+          final labels = hide
+              ? ['Accueil', 'Environnement', 'Alertes', 'Profil']
+              : ['Accueil', 'Environnement', 'Crises', 'Alertes', 'Profil'];
+          final label = labels[index];
+          if (label == 'Accueil') {
             Navigator.popUntil(context, (route) => route.isFirst);
-          } else if (index == 2) {
-            // Navigation vers Crises
+          } else if (label == 'Environnement') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EnvironnementPage()),
+            );
+          } else if (label == 'Crises') {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
             );
-          } else if (index == 3) {
-            // Navigation vers Alertes
+          } else if (label == 'Alertes') {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const EcranAlertesPredictions()),
             );
-          } else if (index == 4) {
-            // Navigation vers Profil
+          } else if (label == 'Profil') {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const EcranProfil()),
             );
           }
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.insert_drive_file),
-            activeIcon: Icon(Icons.insert_drive_file),
-            label: 'Environnement',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: 'Crises',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline),
-            label: 'Alertes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profil',
-          ),
-        ],
+        items: AppState.hideCrises
+            ? const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  label: 'Accueil',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.insert_drive_file),
+                  activeIcon: Icon(Icons.insert_drive_file),
+                  label: 'Environnement',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.info_outline),
+                  label: 'Alertes',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  label: 'Profil',
+                ),
+              ]
+            : const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  label: 'Accueil',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.insert_drive_file),
+                  activeIcon: Icon(Icons.insert_drive_file),
+                  label: 'Environnement',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.show_chart),
+                  label: 'Crises',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.info_outline),
+                  label: 'Alertes',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  label: 'Profil',
+                ),
+              ],
       ),
     );
   }
