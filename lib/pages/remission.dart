@@ -5,6 +5,7 @@ import 'ecran_historique_crises.dart';
 import 'ecran_alertes_predictions.dart';
 import 'ecran_profil.dart';
 import '../state/app_state.dart';
+import 'chat_page.dart';
 
 // Page Rémission - Pour les anciens asthmatiques stabilisés
 // Fichier : /lib/pages/remission.dart
@@ -24,16 +25,16 @@ class RemissionPage extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
             backgroundColor: Colors.blue,
-            child: const Text(
-              'S',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+              child: const Text(
+                'S',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
             ),
           ),
-        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -395,6 +396,7 @@ class RemissionPage extends StatelessWidget {
               'Parler à l\'assistant',
               Colors.white,
               Colors.black87,
+              
             ),
             
             const SizedBox(height: 12),
@@ -447,7 +449,14 @@ class RemissionPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChatPage(),
+                          ),
+                        );      
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black87,
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -562,6 +571,17 @@ class RemissionPage extends StatelessWidget {
                 ],
         );
       }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatPage()),
+          );
+        },
+        backgroundColor: Colors.blue,
+        
+        child: const Icon(Icons.chat_bubble_outline),
+      ),
     );
   }
 

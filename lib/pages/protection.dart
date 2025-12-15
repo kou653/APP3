@@ -4,6 +4,7 @@ import 'ecran_historique_crises.dart';
 import 'ecran_alertes_predictions.dart';
 import 'ecran_profil.dart';
 import '../state/app_state.dart';
+import 'chat_page.dart';
 
 // Page Protection - Pour les utilisateurs en prévention
 // Fichier : /lib/pages/protection.dart
@@ -23,16 +24,16 @@ class ProtectionPage extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
             backgroundColor: Colors.blue,
-            child: const Text(
-              'S',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+              child: const Text(
+                'S',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
             ),
           ),
-        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -640,6 +641,19 @@ class ProtectionPage extends StatelessWidget {
                 ],
         );
       }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatPage()),
+          );
+        },
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30), // ↑ augmente cette valeur
+        ),
+        child: const Icon(Icons.chat_bubble_outline),
+      ),
     );
   }
 

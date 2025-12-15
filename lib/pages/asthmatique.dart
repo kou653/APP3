@@ -5,6 +5,7 @@ import 'ecran_historique_crises.dart';
 import 'ecran_alertes_predictions.dart';
 import 'ecran_profil.dart';
 import '../state/app_state.dart';
+import 'chat_page.dart';
 
 // Page du tableau de bord pour les asthmatiques
 // Fichier : /lib/pages/asthmatique.dart
@@ -543,6 +544,19 @@ class AsthmatiquePage extends StatelessWidget {
                 ],
         );
       }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatPage()),
+          );
+        },
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30), // ↑ augmente cette valeur
+        ),
+        child: const Icon(Icons.chat_bubble_outline),
+      ),
     );
   }
 
