@@ -1,7 +1,8 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:APP3/pages/registration_page.dart';
+import 'registration_page.dart';
+import '../services/api_service.dart';
 
 class LoadingPage extends StatefulWidget {
   const LoadingPage({super.key});
@@ -16,8 +17,10 @@ class _LoadingPageState extends State<LoadingPage> with SingleTickerProviderStat
   double _loadingPercentage = 0;
 
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
+  testerApi();
+
 
     // Contrôleur pour l'animation de respiration
     _animationController = AnimationController(
@@ -41,6 +44,15 @@ class _LoadingPageState extends State<LoadingPage> with SingleTickerProviderStat
       });
     });
   }
+  
+  void testerApi() async {
+  try {
+    final data = await ApiService.getApiInfo();
+    print(data); // Tu verras le JSON dans la console
+  } catch (e) {
+    print("Erreur : $e");
+  }
+}
 
   void _navigateToNextPage() {
     // Remplace la page de chargement par la page d'inscription

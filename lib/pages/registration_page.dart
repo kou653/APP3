@@ -1,9 +1,5 @@
-
 import 'package:flutter/material.dart';
-import 'package:APP3/pages/asthmatique.dart';
-import 'package:APP3/pages/protection.dart';
-import 'package:APP3/pages/remission.dart';
-import 'package:APP3/state/app_state.dart';
+import '../services/api_service.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -30,47 +26,57 @@ class _RegistrationPageState extends State<RegistrationPage> {
     super.dispose();
   }
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedProfileType == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Veuillez sélectionner un type de profil')),
-        );
-        return;
-      }
-      
-      // Navigation vers la page correspondante
-      Widget page;
-      switch (_selectedProfileType) {
-        case 'patient':
-          AppState.hideCrises = false;
-          page = const AsthmatiquePage();
-          break;
-        case 'prevention':
-          AppState.hideCrises = true;
-          page = const ProtectionPage();
-          break;
-        case 'remission':
-          AppState.hideCrises = true;
-          page = const RemissionPage();
-          break;
-        default:
-          return;
-      }
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => page),
+  void inscrire() async {
+  try {
+    final result = await ApiService.registerUser(
+      username: _usernameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      passwordConfirm: _passwordConfirmController.text,
+      profileType: _selectedProfileType ?? 'ASTHMATIC',
+      firstName: '',
+      lastName: '',
+    );
+
+    if (result['success']) {
+      Navigator.pushNamed(context, '/loading');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['error'] ?? "Erreur lors de l'inscription")),
       );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Erreur : $e")),
+    );
   }
+}
+
+
+  void _register() {
+  if (_formKey.currentState!.validate()) {
+
+    if (_selectedProfileType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez sélectionner un type de profil')),
+      );
+      return;
+    }
+
+    // Appel API
+    inscrire();
+  }
+}
+
 
   Widget _buildProfileTypeChips() {
     return Wrap(
       spacing: 12.0,
       runSpacing: 8.0,
       children: [
-        _buildChip('patient', 'Patient', Icons.personal_injury_outlined),
-        _buildChip('prevention', 'Prévention', Icons.shield_outlined),
-        _buildChip('remission', 'Rémission', Icons.favorite_border),
+        _buildChip('ASTHMATIC', 'Patient ', Icons.personal_injury_outlined),
+        _buildChip('PREVENTION', 'Prévention', Icons.shield_outlined),
+        _buildChip('REMISSION', 'Rémission', Icons.favorite_border),
       ],
     );
   }

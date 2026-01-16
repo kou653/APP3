@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'pages/accueil.dart'; // On importe notre page d'accueil
+import 'pages/loading_page.dart';
+import 'pages/registration_page.dart';
+import 'pages/chat_page.dart';
+import 'pages/ecran_alertes_predictions.dart';
+import 'pages/ecran_historique_crises.dart';
+import 'pages/ecran_profil.dart';
+import 'pages/aide_choix.dart';
 
 // FONCTION PRINCIPALE - C'est ici que tout commence !
 void main() {
@@ -26,7 +33,19 @@ class MyApp extends StatelessWidget {
         useMaterial3: true, // Utilise Material Design 3 (plus moderne)
       ),
       
-      home: const AccueilPage(), // Page qui s'affiche au démarrage
+      // Routes nommées pour accéder facilement aux nouvelles pages
+      routes: {
+        '/loading': (context) => const LoadingPage(),
+        '/registration': (context) => const RegistrationPage(),
+        '/chat': (context) => const ChatPage(),
+        '/alerts': (context) => const EcranAlertesPredictions(),
+        '/history': (context) => const EcranHistoriqueCrises(),
+        '/profile': (context) => const EcranProfil(),
+        '/aide': (context) => const AideChoixPage(),
+      },
+
+      // Démarrer sur la page de chargement (puis elle redirige vers l'inscription)
+      home: const LoadingPage(),
     );
   }
 }
