@@ -1,9 +1,10 @@
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'asthmatique.dart';
 import 'protection.dart';
 import 'remission.dart';
 import '../state/app_state.dart';
+import 'login_page.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -218,6 +219,40 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     const SizedBox(height: 12),
                     _buildProfileTypeChips(),
                     const SizedBox(height: 32),
+                    const SizedBox(height: 20),
+
+                // Lien connexion
+                Center(
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Déjà inscrit ? ',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Se connecter',
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+
                     ElevatedButton(
                       onPressed: _register,
                       style: ElevatedButton.styleFrom(

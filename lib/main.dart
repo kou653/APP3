@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pages/accueil.dart'; // On importe notre page d'accueil
 import 'pages/loading_page.dart';
+import 'pages/login_page.dart';
 import 'pages/registration_page.dart';
 import 'pages/chat_page.dart';
 import 'pages/ecran_alertes_predictions.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/history': (context) => const EcranHistoriqueCrises(),
         '/profile': (context) => const EcranProfil(),
         '/aide': (context) => const AideChoixPage(),
+        '/login': (context) => const LoginPage(),
       },
 
       // Démarrer sur la page de chargement (puis elle redirige vers l'inscription)
