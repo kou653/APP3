@@ -45,7 +45,7 @@ class _AsthmatiquePageState extends State<AsthmatiquePage> {
   /// Charge toutes les données du tableau de bord
   Future<void> _loadDashboardData() async {
     try {
-      final token = AuthStorage.getAccessToken();
+      final token = AuthStorage.accessToken;
       if (token == null) {
         setState(() {
           error = "Utilisateur non connecté.";
@@ -55,7 +55,7 @@ class _AsthmatiquePageState extends State<AsthmatiquePage> {
       }
 
       // Récupérer le nom de l'utilisateur
-      final userNameStored = AuthStorage.getUserName();
+      final userNameStored = AuthStorage.username;
       
       // Appels parallèles pour charger les données
       final results = await Future.wait([

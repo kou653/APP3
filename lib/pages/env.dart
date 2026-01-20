@@ -1,20 +1,107 @@
+// Fichier : /lib/pages/env.dart - VERSION DYNAMIQUE
 import 'package:flutter/material.dart';
 import 'ecran_historique_crises.dart';
 import 'ecran_alertes_predictions.dart';
 import 'ecran_profil.dart';
 import '../state/app_state.dart';
+import '../services/api_service.dart';
+import '../services/auth_storage.dart';
+import '../models/environment.dart';
 
-// Page Environnement - Qualité de l'air
-// Fichier : /lib/pages/env.dart
-class EnvironnementPage extends StatelessWidget {
+class EnvironnementPage extends StatefulWidget {
   const EnvironnementPage({super.key});
+
+  @override
+  State<EnvironnementPage> createState() => _EnvironnementPageState();
+}
+
+class _EnvironnementPageState extends State<EnvironnementPage> {
+  AirQuality? _airQuality;
+  Weather? _weather;
+  bool _isLoading = true;
+  String? _error;
+  String _city = 'Abidjan';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEnvironmentData();
+  }
+
+  Future<void> _loadEnvironmentData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final token = AuthStorage.accessToken;
+    if (token == null) {
+      setState(() {
+        _error = 'Non authentifié';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      // Récupérer la ville de l'utilisateur
+      final savedCity = AuthStorage.city;
+      if (savedCity != null) {
+        _city = savedCity;
+      }
+
+      // Charger la qualité de l'air
+      final airResult = await ApiService.getAirQuality(token: token);
+      
+      // Charger la météo
+      final weatherResult = await ApiService.getWeather(token: token);
+
+      if (mounted) {
+        setState(() {
+          if (airResult['success'] == true) {
+            final airData = airResult['data'];
+            if (airData is List && airData.isNotEmpty) {
+              _airQuality = AirQuality.fromJson(
+                Map<String, dynamic>.from(airData[0])
+              );
+            } else if (airData is Map) {
+              _airQuality = AirQuality.fromJson(
+                Map<String, dynamic>.from(airData)
+              );
+            }
+          }
+
+          if (weatherResult['success'] == true) {
+            final weatherData = weatherResult['data'];
+            if (weatherData is List && weatherData.isNotEmpty) {
+              _weather = Weather.fromJson(
+                Map<String, dynamic>.from(weatherData[0])
+              );
+            } else if (weatherData is Map) {
+              _weather = Weather.fromJson(
+                Map<String, dynamic>.from(weatherData)
+              );
+            }
+          }
+
+
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Erreur de chargement: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      
-      // === BARRE DU HAUT ===
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -34,7 +121,7 @@ class EnvironnementPage extends StatelessWidget {
                 Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
                 const SizedBox(width: 4),
                 Text(
-                  'Abidjan, côte d\'ivoire',
+                  _city,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
@@ -44,458 +131,312 @@ class EnvironnementPage extends StatelessWidget {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black87),
+            onPressed: _loadEnvironmentData,
+          ),
+        ],
       ),
-      
-      // === CONTENU ===
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // === CARTE INTERACTIVE ===
-            Container(
-              height: 140,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.green.shade100,
-                    Colors.yellow.shade100,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(_error!, style: const TextStyle(color: Colors.red)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadEnvironmentData,
+                        child: const Text('Réessayer'),
                       ),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Carte interactive',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Zones colorées selon qualité air',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // === MON ENVIRONNEMENT ACTUEL ===
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Mon environnement actuel',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Cercle qualité de l'air
-                  Center(
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadEnvironmentData,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Carte interactive
                         Container(
-                          width: 120,
-                          height: 120,
+                          height: 140,
                           decoration: BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.green.shade100,
+                                Colors.yellow.shade100,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          child: const Center(
-                            child: Text(
-                              '45',
-                              style: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.location_on,
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Carte interactive',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Zones colorées selon qualité air',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Qualité de l\'air',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'Bon',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
+                        const SizedBox(height: 20),
+
+                        // Mon environnement actuel
+                        _buildCurrentEnvironment(),
+                        const SizedBox(height: 20),
+
+                        // Météo actuelle
+                        if (_weather != null) _buildWeatherCard(),
+                        const SizedBox(height: 20),
+
+                        // Recommandations
+                        _buildRecommendations(),
+                        const SizedBox(height: 80),
                       ],
                     ),
                   ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Polluants
-                  _buildPollutantBar('PM2.5', '12 µg/m³ - Bon', 0.3),
-                  const SizedBox(height: 12),
-                  _buildPollutantBar('PM10', '24 µg/m³ - Bon', 0.4),
-                  const SizedBox(height: 12),
-                  _buildPollutantBar('O₃ (Ozone)', '32 ppb - Modéré', 0.5),
-                  const SizedBox(height: 12),
-                  _buildPollutantBar('NO₂', '18 ppb - Bon', 0.3),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // === PRÉVISIONS 24H ===
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Prévisions 24h',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Timeline horizontale
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildTimeCard('8h', '45', Colors.green),
-                        _buildTimeCard('9h', '48', Colors.green),
-                        _buildTimeCard('10h', '52', Colors.green),
-                        _buildTimeCard('11h', '65', Colors.yellow),
-                        _buildTimeCard('12h', '78', Colors.yellow),
-                        _buildTimeCard('13h', '85', Colors.yellow),
-                        _buildTimeCard('14h', '92', Colors.orange),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // Alerte pollution
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_amber, color: Colors.orange.shade700, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Pic de pollution prévu entre 14h et 16h',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.orange.shade900,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // === NIVEAU DE POLLEN ===
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Niveau de pollen',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.yellow.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Élevé',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  Row(
-                    children: [
-                      Icon(Icons.eco_outlined, color: Colors.yellow.shade700, size: 40),
-                      const SizedBox(width: 16),
-                      Row(
-                        children: [
-                          _buildPollenChip('Graminées'),
-                          const SizedBox(width: 8),
-                          _buildPollenChip('Bouleau'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // === RECOMMANDATIONS INTELLIGENTES ===
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Recommandations intelligentes',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _buildRecommendation(
-                    Icons.check_circle,
-                    'Bon moment pour sortir maintenant',
-                    Colors.green,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildRecommendation(
-                    Icons.warning_amber,
-                    'Évitez exercice extérieur 14h-17h',
-                    Colors.orange,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildRecommendation(
-                    Icons.home,
-                    'Restez à l\'intérieur après 20h',
-                    Colors.red,
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // === MES LIEUX FRÉQUENTS ===
-            const Text(
-              'Mes lieux fréquents',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            
-            const SizedBox(height: 12),
-            
-            _buildLocationCard('Maison', 'Qualité air extérieur', 'Bon', Colors.green),
-            const SizedBox(height: 8),
-            _buildLocationCard('Travail', 'Exposition moyenne', 'Modéré', Colors.yellow),
-            const SizedBox(height: 8),
-            _buildLocationCard('Salle sport', 'Air filtré', 'Recommandé', Colors.green),
-            
-            const SizedBox(height: 80),
-          ],
+                ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildCurrentEnvironment() {
+    if (_airQuality == null) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text('Données de qualité d\'air non disponibles'),
         ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      
-      // === BARRE DE NAVIGATION ===
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey[600],
-        currentIndex: 1, // Environnement sélectionné
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        onTap: (index) {
-          final hide = AppState.hideCrises;
-          final labels = hide
-              ? ['Accueil', 'Environnement', 'Alertes', 'Profil']
-              : ['Accueil', 'Environnement', 'Crises', 'Alertes', 'Profil'];
-          final label = labels[index];
-          if (label == 'Accueil') {
-            Navigator.popUntil(context, (route) => route.isFirst);
-          } else if (label == 'Environnement') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EnvironnementPage()),
-            );
-          } else if (label == 'Crises') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
-            );
-          } else if (label == 'Alertes') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranAlertesPredictions()),
-            );
-          } else if (label == 'Profil') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EcranProfil()),
-            );
-          }
-        },
-        items: AppState.hideCrises
-            ? const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Accueil',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mon environnement actuel',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Cercle qualité de l'air
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: _airQuality!.color,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${_airQuality!.aqi}',
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.insert_drive_file),
-                  activeIcon: Icon(Icons.insert_drive_file),
-                  label: 'Environnement',
+                const SizedBox(height: 12),
+                const Text(
+                  'Qualité de l\'air',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.info_outline),
-                  label: 'Alertes',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  label: 'Profil',
-                ),
-              ]
-            : const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Accueil',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.insert_drive_file),
-                  activeIcon: Icon(Icons.insert_drive_file),
-                  label: 'Environnement',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.show_chart),
-                  label: 'Crises',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.info_outline),
-                  label: 'Alertes',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  label: 'Profil',
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _airQuality!.color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _airQuality!.aqiLevelFr,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _airQuality!.color,
+                    ),
+                  ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Polluants
+          _buildPollutantBar('PM2.5', _airQuality!.pm25Display, (_airQuality!.pollutants['pm25'] ?? 0) / 100),
+          const SizedBox(height: 12),
+          _buildPollutantBar('PM10', _airQuality!.pm10Display, (_airQuality!.pollutants['pm10'] ?? 0) / 100),
+        ],
       ),
     );
   }
 
-  // === BARRE DE POLLUANT ===
+  Widget _buildWeatherCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Météo actuelle',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(_weather!.weatherIcon, size: 48, color: Colors.orange),
+                      const SizedBox(width: 12),
+                      Text(
+                        _weather!.temperatureDisplay,
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _weather!.description,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('Ressenti: ${_weather!.feelsLikeDisplay}'),
+                  const SizedBox(height: 4),
+                  Text('Humidité: ${_weather!.humidityDisplay}'),
+                  const SizedBox(height: 4),
+                  Text('Vent: ${_weather!.windSpeedDisplay}'),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendations() {
+    if (_airQuality == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Recommandations intelligentes',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ..._airQuality!.healthRecommendations.map((rec) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildRecommendation(
+                  Icons.info,
+                  rec,
+                  Colors.blue,
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPollutantBar(String label, String value, double progress) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -524,7 +465,7 @@ class EnvironnementPage extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
-            value: progress,
+            value: progress.clamp(0.0, 1.0),
             backgroundColor: Colors.grey[200],
             color: progress < 0.4 ? Colors.green : (progress < 0.6 ? Colors.yellow : Colors.orange),
             minHeight: 8,
@@ -534,59 +475,6 @@ class EnvironnementPage extends StatelessWidget {
     );
   }
 
-  // === CARTE HORAIRE PRÉVISION ===
-  Widget _buildTimeCard(String time, String value, Color color) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            time,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // === CHIP POLLEN ===
-  Widget _buildPollenChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey[700],
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  // === RECOMMANDATION ===
   Widget _buildRecommendation(IconData icon, String text, Color color) {
     return Row(
       children: [
@@ -605,86 +493,86 @@ class EnvironnementPage extends StatelessWidget {
     );
   }
 
-  // === CARTE LIEU ===
-  Widget _buildLocationCard(String title, String subtitle, String status, Color statusColor) {
-    IconData icon;
-    Color iconBg;
-    
-    if (title == 'Maison') {
-      icon = Icons.home;
-      iconBg = Colors.blue.shade100;
-    } else if (title == 'Travail') {
-      icon = Icons.work;
-      iconBg = Colors.purple.shade100;
-    } else {
-      icon = Icons.fitness_center;
-      iconBg = Colors.green.shade100;
-    }
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: statusColor, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: statusColor,
+  Widget _buildBottomNav() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.grey[600],
+      currentIndex: 1,
+      selectedFontSize: 12,
+      unselectedFontSize: 12,
+      backgroundColor: Colors.white,
+      elevation: 8,
+      onTap: (index) {
+        final hide = AppState.hideCrises;
+        final labels = hide
+            ? ['Accueil', 'Environnement', 'Alertes', 'Profil']
+            : ['Accueil', 'Environnement', 'Crises', 'Alertes', 'Profil'];
+        final label = labels[index];
+        if (label == 'Accueil') {
+          Navigator.popUntil(context, (route) => route.isFirst);
+        } else if (label == 'Environnement') {
+          // Déjà sur cette page
+        } else if (label == 'Crises') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const EcranHistoriqueCrises()),
+          );
+        } else if (label == 'Alertes') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const EcranAlertesPredictions()),
+          );
+        } else if (label == 'Profil') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const EcranProfil()),
+          );
+        }
+      },
+      items: AppState.hideCrises
+          ? const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                label: 'Accueil',
               ),
-            ),
-          ),
-        ],
-      ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.insert_drive_file),
+                activeIcon: Icon(Icons.insert_drive_file),
+                label: 'Environnement',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.info_outline),
+                label: 'Alertes',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                label: 'Profil',
+              ),
+            ]
+          : const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                label: 'Accueil',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.insert_drive_file),
+                activeIcon: Icon(Icons.insert_drive_file),
+                label: 'Environnement',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.show_chart),
+                label: 'Crises',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.info_outline),
+                label: 'Alertes',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                label: 'Profil',
+              ),
+            ],
     );
   }
 }

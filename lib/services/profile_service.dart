@@ -7,7 +7,8 @@ import '../models/user_profile.dart';
 class ProfileService {
   /// Récupère le profil complet de l'utilisateur connecté
   static Future<User?> getCurrentUserProfile() async {
-    final token = AuthStorage.getAccessToken();
+    final token = AuthStorage.accessToken;
+    
     if (token == null) return null;
 
     try {
@@ -28,7 +29,8 @@ class ProfileService {
     String? lastName,
     String? phone,
   }) async {
-    final token = AuthStorage.getAccessToken();
+    final token = AuthStorage.accessToken;
+
     if (token == null) return false;
 
     try {

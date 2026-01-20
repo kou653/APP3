@@ -386,7 +386,142 @@ class ApiService {
       'getWeather',
     );
   }
+   
+   // ============ ALERTES ============
 
+/// Récupère toutes les alertes de l'utilisateur
+
+static Future<Map<String, dynamic>> getAlerts({
+
+  required String token,
+
+  int page = 1,
+
+  int pageSize = 20,
+
+}) async {
+
+  print('[ApiService] 🔔 getAlerts - Page $page');
+
+  return _makeRequest(
+
+    () => http.get(
+
+      Uri.parse("$baseUrl/sensors/alerts/?page=$page&page_size=$pageSize"),
+
+      headers: {
+
+        "Content-Type": "application/json",
+
+        "Authorization": "Bearer $token",
+
+      },
+
+    ),
+
+    'getAlerts',
+
+  );
+
+}
+
+/// Récupère les alertes non lues
+
+static Future<Map<String, dynamic>> getUnreadAlerts({
+
+  required String token,
+
+}) async {
+
+  print('[ApiService] 📬 getUnreadAlerts');
+
+  return _makeRequest(
+
+    () => http.get(
+
+      Uri.parse("$baseUrl/sensors/alerts/unread/"),
+
+      headers: {
+
+        "Content-Type": "application/json",
+
+        "Authorization": "Bearer $token",
+
+      },
+
+    ),
+
+    'getUnreadAlerts',
+
+  );
+
+}
+
+/// Marque une alerte comme lue
+
+static Future<Map<String, dynamic>> markAlertAsRead({
+
+  required String token,
+
+  required int alertId,
+
+}) async {
+
+  print('[ApiService] ✅ markAlertAsRead - ID: $alertId');
+
+  return _makeRequest(
+
+    () => http.post(
+
+      Uri.parse("$baseUrl/sensors/alerts/$alertId/mark_read/"),
+
+      headers: {
+
+        "Content-Type": "application/json",
+
+        "Authorization": "Bearer $token",
+
+      },
+
+    ),
+
+    'markAlertAsRead',
+
+  );
+
+}
+
+/// Récupère le résumé de santé
+
+static Future<Map<String, dynamic>> getHealthSummary({
+
+  required String token,
+
+}) async {
+
+  print('[ApiService] 💚 getHealthSummary');
+
+  return _makeRequest(
+
+    () => http.get(
+
+      Uri.parse("$baseUrl/sensors/data/health_summary/"),
+
+      headers: {
+
+        "Content-Type": "application/json",
+
+        "Authorization": "Bearer $token",
+
+      },
+
+    ),
+
+    'getHealthSummary',
+
+  );
+
+}
 
   // ============ CHATBOT ============
 
