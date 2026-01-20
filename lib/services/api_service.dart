@@ -1,5 +1,5 @@
 // Fichier : /lib/services/api_service.dart (VERSION AMÉLIORÉE)
-
+import 'api_config.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -11,7 +11,7 @@ class ApiService {
   // URLs de base
   static const String baseUrl = "https://respira-backend.onrender.com/api/v1";
   static const String chatbotBaseUrl = "https://respira-backend.onrender.com/api/v1/chatbot/";
-
+   
   // Timeout
   static const int timeoutSeconds = 30;
 
@@ -43,6 +43,7 @@ class ApiService {
   static Future<Map<String, dynamic>> _makeRequest(
     Future<http.Response> Function() request,
     String operationName,
+    
   ) async {
     try {
       print('[ApiService] 🔵 $operationName - Requête envoyée');
@@ -385,6 +386,7 @@ class ApiService {
       'getWeather',
     );
   }
+
 
   // ============ CHATBOT ============
 

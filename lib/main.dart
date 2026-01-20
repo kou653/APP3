@@ -8,9 +8,12 @@ import 'pages/ecran_alertes_predictions.dart';
 import 'pages/ecran_historique_crises.dart';
 import 'pages/ecran_profil.dart';
 import 'pages/aide_choix.dart';
-
+import 'services/auth_storage.dart';
 // FONCTION PRINCIPALE - C'est ici que tout commence !
-void main() {
+void main() async {
+// Initialise SharedPreferences
+  await AuthStorage.init();
+
   runApp(const MyApp()); // Lance l'application
 }
 
